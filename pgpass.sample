@@ -1,0 +1,13 @@
+# PostgreSQL Password File Sample
+# Format: hostname:port:database:username:password
+#
+# IMPORTANT: This file must have restricted permissions to be used by PostgreSQL.
+# Run: chmod 0600 .pgpass
+#
+# Use '*' as a wildcard for any field.
+
+# Example for local development
+localhost:5432:*:postgres:mypassword
+
+# Example for a specific production database
+# prod-db.example.com:5432:my_db:db_user:secure_password
