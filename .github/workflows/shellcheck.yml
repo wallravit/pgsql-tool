@@ -1,0 +1,24 @@
+name: Lint Shell Scripts
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run ShellCheck
+      run: |
+        # Use shellcheck (pre-installed on ubuntu-latest) to lint all .sh files
+        shellcheck *.sh
+    - name: Check Bash Syntax
+      run: |
+        # Additional syntax check using bash -n
+        for f in *.sh; do
+          bash -n "$f"
+        done
