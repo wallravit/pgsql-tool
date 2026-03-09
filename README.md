@@ -5,6 +5,8 @@ Simple bash scripts to backup and restore PostgreSQL databases with real-time lo
 ## Features
 - **Tail Log**: All operations are logged to a file while being displayed in real-time in the terminal.
 - **Progress Tracking**: Uses verbose output to show which tables and objects are being processed.
+- **Compression Support**: Support for `gzip` and `zstd` compression during backup and restore.
+- **Schema-Only Mode**: Option to backup only the database schema without data.
 - **Customizable Logging**: Specify your own log file path or use the default.
 
 ## 1. Backup Script (`backup_psql.sh`)
@@ -13,32 +15,35 @@ Backup a PostgreSQL database to a `.sql` file.
 
 ### Usage
 ```bash
-./backup_psql.sh -d <db_name> -u <user> -h <host> -p <port> -f <output_file> -l <log_file>
+./backup_psql.sh -d <db_name> -u <user> [-h <host>] [-p <port>] [-f <output_file>] [-l <log_file>] [-z <gzip|zstd>] [-s]
 ```
 - `-d`: Database name (Required)
 - `-u`: Database user (Required)
 - `-h`: Database host (Default: localhost)
 - `-p`: Database port (Default: 5432)
-- `-f`: Output file path (Default: `backup_<db_name>_<timestamp>.sql`)
+- `-f`: Output file path
 - `-l`: Log file path (Default: `backup_<db_name>.log`)
+- `-z`: Compress output using `gzip` or `zstd`.
+- `-s`: Schema-only backup (no data).
 
 ### Example
 ```bash
 export PGPASSWORD='mypassword'
-./backup_psql.sh -d my_database -u postgres -f /tmp/backup.sql
+# Compressed schema-only backup
+./backup_psql.sh -d my_database -u postgres -z gzip -s
 ```
 
 ---
 
 ## 2. Restore Script (`restore_psql.sh`)
 
-Restore a `.sql` backup file to a target PostgreSQL database.
+Restore a `.sql`, `.gz`, or `.zst` backup file to a target PostgreSQL database.
 
 ### Usage
 ```bash
-./restore_psql.sh -f <input_file> -d <db_name> -u <user> -h <host> -p <port> -l <log_file>
+./restore_psql.sh -f <input_file> -d <db_name> -u <user> [-h <host>] [-p <port>] [-l <log_file>]
 ```
-- `-f`: Input file path (Required)
+- `-f`: Input file path (Required). Supports `.sql`, `.sql.gz`, and `.sql.zst`.
 - `-d`: Target database name (Required)
 - `-u`: Database user (Required)
 - `-h`: Database host (Default: localhost)

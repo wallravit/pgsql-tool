@@ -10,6 +10,7 @@ A collection of robust, portable Bash scripts for managing PostgreSQL database o
 - **Dependencies**: 
   - PostgreSQL Client Tools (`psql`, `pg_dump`, `pg_restore`).
   - Standard Unix utilities (`grep`, `sed`, `awk`, `comm`, `tee`).
+  - **Compression**: `gzip`, `zstd` (optional).
   - **CI/Linting**: `shellcheck` (pre-installed in GitHub Actions `ubuntu-latest`).
 - **Security**: Scripts assume `PGPASSWORD` is set in the environment or handled via `.pgpass` to avoid interactive prompts. **Never hardcode passwords.**
 
@@ -23,7 +24,7 @@ When adding a new script, follow this pattern:
 5.  **Validation**: Check if required arguments (like `DB_NAME`, `DB_USER`) are provided.
 6.  **Logging**: 
     - Wrap the main execution in a subshell `(...)` and pipe to `tee -a "$LOG_FILE"`.
-    - Always capture and check `PIPESTATUS[0]` to ensure the database command itself succeeded.
+    - Always capture and check `PIPESTATUS` to ensure the database command itself succeeded.
 7.  **Cleanup**: Ensure temporary files (if any) are removed even on failure.
 8.  **Linting**: Ensure all scripts pass `shellcheck` and `bash -n` syntax checks.
 
@@ -52,11 +53,11 @@ When adding a new script, follow this pattern:
 - [x] Created `compare_psql.sh` for data verification after restore/migration.
 - [x] Set up GitHub Actions CI for `shellcheck` and bash syntax validation.
 - [x] Resolved all `shellcheck` linting issues across the codebase.
-- [ ] Add support for compressed backups (gzip/zstd).
-- [ ] Add schema-only export/import options.
+- [x] Add support for compressed backups (gzip/zstd).
+- [x] Add schema-only export/import options.
 
 ## Active Scripts
-- `backup_psql.sh`: Backs up a PostgreSQL database to a `.sql` file. Uses `pg_dump`.
-- `restore_psql.sh`: Restores a `.sql` file to a PostgreSQL database. Uses `psql`.
+- `backup_psql.sh`: Backs up a PostgreSQL database to a `.sql` file. Supports gzip/zstd compression and schema-only dumps.
+- `restore_psql.sh`: Restores a `.sql`, `.gz`, or `.zst` file to a PostgreSQL database.
 - `migrate_psql.sh`: Direct migration from one database to another using a pipe (`pg_dump | psql`).
 - `compare_psql.sh`: Validates data integrity by comparing table lists and row counts between two databases.

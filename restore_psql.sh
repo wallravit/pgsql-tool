@@ -5,8 +5,8 @@ set -e
 
 # Function to display help
 usage() {
-    echo "Usage: $0 -f <input_file> -d <db_name> -u <user> -h <host> -p <port> -l <log_file>"
-    echo "  -f  Input file path (e.g., .sql file)"
+    echo "Usage: $0 -f <input_file> -d <db_name> -u <user> [-h <host>] [-p <port>] [-l <log_file>]"
+    echo "  -f  Input file path (e.g., .sql, .sql.gz, .sql.zst)"
     echo "  -d  Target database name"
     echo "  -u  Database user"
     echo "  -h  Database host (default: localhost)"
@@ -52,16 +52,28 @@ echo "Starting restore of $INPUT_FILE to $DB_NAME on $HOST:$PORT..."
 echo "Log file: $LOG_FILE"
 echo "---"
 
+# Detect decompression tool
+DECOMPRESS_CMD="cat"
+if [[ "$INPUT_FILE" == *.gz ]]; then
+    DECOMPRESS_CMD="gunzip -c"
+    echo "Detected GZIP compression"
+elif [[ "$INPUT_FILE" == *.zst ]]; then
+    DECOMPRESS_CMD="zstd -dc"
+    echo "Detected ZSTD compression"
+fi
+
 # Run psql with echo-all for progress
 # Note: PGPASSWORD environment variable should be set externally for non-interactive use
 (
     echo "--- Restore started at $(date) ---"
-    # --echo-all shows every command being executed, providing progress
-    psql -h "$HOST" -p "$PORT" -U "$DB_USER" -d "$DB_NAME" -f "$INPUT_FILE" --echo-all 2>&1
-    STATUS=$?
-    echo "--- Restore finished at $(date) with status $STATUS ---"
-    exit $STATUS
-) | tee -a "$LOG_FILE"
+    
+    # Pipe decompressed content to psql
+    $DECOMPRESS_CMD "$INPUT_FILE" | psql -h "$HOST" -p "$PORT" -U "$DB_USER" -d "$DB_NAME" --echo-all
+    
+    PSQL_STATUS=${PIPESTATUS[1]}
+    echo "--- Restore finished at $(date) with status $PSQL_STATUS ---"
+    exit "$PSQL_STATUS"
+) 2>&1 | tee -a "$LOG_FILE"
 
 if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
     echo "---"
