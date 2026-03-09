@@ -10,6 +10,7 @@ A collection of robust, portable Bash scripts for managing PostgreSQL database o
 - **Dependencies**: 
   - PostgreSQL Client Tools (`psql`, `pg_dump`, `pg_restore`).
   - Standard Unix utilities (`grep`, `sed`, `awk`, `comm`, `tee`).
+  - **CI/Linting**: `shellcheck` (pre-installed in GitHub Actions `ubuntu-latest`).
 - **Security**: Scripts assume `PGPASSWORD` is set in the environment or handled via `.pgpass` to avoid interactive prompts. **Never hardcode passwords.**
 
 ## Standard Script Architecture
@@ -24,19 +25,24 @@ When adding a new script, follow this pattern:
     - Wrap the main execution in a subshell `(...)` and pipe to `tee -a "$LOG_FILE"`.
     - Always capture and check `PIPESTATUS[0]` to ensure the database command itself succeeded.
 7.  **Cleanup**: Ensure temporary files (if any) are removed even on failure.
+8.  **Linting**: Ensure all scripts pass `shellcheck` and `bash -n` syntax checks.
 
 ## Implementation Guidelines
 - **Idempotency**: Scripts should be safe to run multiple times.
 - **Verbose Output**: Use verbose flags (`-v` for `pg_dump`) to provide progress feedback.
 - **Error Handling**: Use `set -e` and explicit checks for critical commands.
 - **Portability**: Avoid bash-isms that are too specific to a single OS if possible, though targeting Linux/macOS is standard.
+- **Coding Style**: 
+    - Always quote variables to prevent word splitting (SC2086).
+    - Prefer bash loops (`while read`) over `sed` for complex multi-line prefixing to satisfy `shellcheck` (SC2001).
 
 ## How to Add a New Feature
 1.  **Define Scope**: Determine the specific PostgreSQL task (e.g., "Analyze table statistics", "Kill long-running queries").
 2.  **Create Script**: Follow the "Standard Script Architecture".
-3.  **Test Locally**: Verify with a local PostgreSQL instance.
-4.  **Update README**: Add the new script and its usage to `README.md`.
-5.  **Update Agent Notes**: Add the new script to the "Scripts" section and update "Progress".
+3.  **Lint Script**: Run `shellcheck <script>.sh` locally.
+4.  **Test Locally**: Verify with a local PostgreSQL instance.
+5.  **Update README**: Add the new script and its usage to `README.md`.
+6.  **Update Agent Notes**: Add the new script to the "Scripts" section and update "Progress".
 
 ## Current Progress
 - [x] Initialized project.
@@ -44,6 +50,8 @@ When adding a new script, follow this pattern:
 - [x] Created `restore_psql.sh` for database restoration.
 - [x] Created `migrate_psql.sh` for direct database migration.
 - [x] Created `compare_psql.sh` for data verification after restore/migration.
+- [x] Set up GitHub Actions CI for `shellcheck` and bash syntax validation.
+- [x] Resolved all `shellcheck` linting issues across the codebase.
 - [ ] Add support for compressed backups (gzip/zstd).
 - [ ] Add schema-only export/import options.
 
