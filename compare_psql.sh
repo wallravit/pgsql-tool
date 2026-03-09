@@ -89,14 +89,14 @@ run_query() {
     MISSING_IN_TARGET=$(comm -23 <(echo "$SRC_TABLES") <(echo "$TARGET_TABLES"))
     if [[ -n "$MISSING_IN_TARGET" ]]; then
         echo "Tables in source but missing in target:"
-        echo "$MISSING_IN_TARGET" | sed 's/^/  - /'
+        while IFS= read -r line; do echo "  - $line"; done <<< "$MISSING_IN_TARGET"
     fi
 
     # Tables in Target but not in Source
     MISSING_IN_SRC=$(comm -13 <(echo "$SRC_TABLES") <(echo "$TARGET_TABLES"))
     if [[ -n "$MISSING_IN_SRC" ]]; then
         echo "Tables in target but missing in source:"
-        echo "$MISSING_IN_SRC" | sed 's/^/  - /'
+        while IFS= read -r line; do echo "  - $line"; done <<< "$MISSING_IN_SRC"
     fi
 
     # Common tables
@@ -135,4 +135,4 @@ run_query() {
 
 # Capture the exit status from the subshell
 EXIT_CODE=${PIPESTATUS[0]}
-exit $EXIT_CODE
+exit "$EXIT_CODE"
